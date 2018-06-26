@@ -1,0 +1,22 @@
+{
+  "name": "tetris-game",
+  "version": "1.0.0",
+  "description": "Tetris game on Pixi.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Alexa905/tetris-game-es6.git"
+  },
+  "author": "Tatyana Alexeenkova",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Alexa905/tetris-game-es6/issues"
+  },
+  "homepage": "https://github.com/Alexa905/tetris-game-es6#readme",
+  "dependencies": {
+    "pixi": "^0.3.1"
+  }
+}
