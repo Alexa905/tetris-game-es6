@@ -2,23 +2,69 @@ let type = "WebGL"
 if (!PIXI.utils.isWebGLSupported()) {
 	type = "canvas"
 }
-
+//cat = new Sprite(resources["images/cat.png"].texture);
 PIXI.utils.sayHello(type);
+const PIECES = ['J', 'L', 'I'];
+const SQUARE_SIZE = 16;
+const PLAYGROUND = {
+	height: SQUARE_SIZE * 20 ,
+	width: SQUARE_SIZE * 10
+};
+const SHAPES = {
+	I: {
+		matrix: [[
+			[0, 1, 0, 0],
+			[0, 1, 0, 0],
+			[0, 1, 0, 0],
+			[0, 1, 0, 0]], [
+			[0, 0, 0, 0],
+			[1, 1, 1, 1],
+			[0, 0, 0, 0],
+			[0, 0, 0, 0],
+		]
+		],
+		color: '0xFFFF00'
+	},
+	J: {
+		matrix: [[
+			[0, 0, 1, 0],
+			[1, 1, 1, 0],
+			[0, 0, 0, 0],
+			[0, 0, 0, 0]], [
+			[1, 0, 0, 0],
+			[1, 0, 0, 0],
+			[1, 1, 0, 0],
+			[0, 0, 0, 0]
+		]
+		],
+		color: '0x32CD32'
+	},
+	L: {
+		matrix: [[
+			[0, 0, 0, 0],
+			[1, 1, 1, 1],
+			[0, 0, 0, 0],
+			[0, 0, 0, 0]]
+		],
+		color: '0xffa500'
+	}
+};
+
 //Aliases
 let Application = PIXI.Application,
 	loader = PIXI.loader,
 	resources = PIXI.loader.resources,
-	Sprite = PIXI.Sprite,
 	Graphics = PIXI.Graphics;
-
+let tetromino, state;
 //Create a Pixi Application
 let app = new Application({
-	width: 256,
-	height: 512,
+	width: PLAYGROUND.width,
+	height: PLAYGROUND.height,
 	antialias: true,
 	transparent: false,
 	backgroundColor: '0x061639',
-	resolution: 1 })
+	resolution: 1
+});
 
 
 
@@ -65,28 +111,27 @@ function keyboard(keyCode) {
 	return key;
 }
 //Define any variables that are used in more than one function
-let cat, state;
+function drawPixel(type) {
+	let rectangle = new Graphics();
+	rectangle.lineStyle(4, 0xFF3300, 1);
+	rectangle.beginFill(SHAPES[type].color);
+	rectangle.drawRect(0, 0, SQUARE_SIZE, SQUARE_SIZE);
+	rectangle.endFill();
+	return rectangle;
+}
 
-function setup() {
-
-	//Create the `cat` sprite
-	cat = new Sprite(resources["images/cat.png"].texture);
-	cat.y = 0;
-	cat.vx = 0;
-	cat.vy = 0;
-	app.stage.addChild(cat);
+function keyPressHandler() {
 
 	//Capture the keyboard arrow keys
 	let left = keyboard(37),
 		up = keyboard(38),
 		right = keyboard(39),
 		down = keyboard(40);
-
 	//Left arrow key `press` method
 	left.press = () => {
 		//Change the cat's velocity when the key is pressed
-		cat.vx = -5;
-		cat.vy = 0;
+		this.speed(-5,0);
+		this.move(this.x-SQUARE_SIZE,this.y);
 	};
 
 	//Left arrow key `release` method
@@ -94,43 +139,113 @@ function setup() {
 		//If the left arrow has been released, and the right arrow isn't down,
 		//and the cat isn't moving vertically:
 		//Stop the cat
-		if (!right.isDown && cat.vy === 0) {
-			cat.vx = 0;
+		if (!right.isDown && this.vy === 0) {
+			this.speed(0, 0 )
 		}
 	};
 
 	//Up
 	up.press = () => {
-		cat.vy = -5;
-		cat.vx = 0;
+		//this.y = -5;
+		//this.vx = 0;
+		this.rotate();
 	};
 	up.release = () => {
-		if (!down.isDown && cat.vx === 0) {
-			cat.vy = 0;
+		if (!down.isDown && this.vx === 0) {
+			this.speed(0, 0 )
 		}
 	};
 
 	//Right
 	right.press = () => {
-		cat.vx = 5;
-		cat.vy = 0;
+		this.move(this.x+SQUARE_SIZE,this.y);
+		this.speed(5, 0)
 	};
 	right.release = () => {
-		if (!left.isDown && cat.vy === 0) {
-			cat.vx = 0;
+		if (!left.isDown && this.vy === 0) {
+			this.speed(0,0)
 		}
 	};
 
 	//Down
 	down.press = () => {
-		cat.vy = 5;
-		cat.vx = 0;
+		if (this.y >= PLAYGROUND.height - SQUARE_SIZE * 4) {
+			this.speed(0,0)
+		} else {
+			this.move(this.x,this.y +20);
+			this.speed(0,5)
+		}
+
 	};
 	down.release = () => {
-		if (!up.isDown && cat.vx === 0) {
-			cat.vy = 0;
+		if (!up.isDown && this.vx === 0) {
+			this.vy = 0;
 		}
 	};
+
+}
+
+class Tetramino {
+	constructor(type) {
+		this.type = type;
+		this.angle = 0;
+		// Position of the tetromino
+		this.x = Math.floor(PLAYGROUND.width / 2 - SQUARE_SIZE);
+		this.y = 0;
+		this._container = new PIXI.Container();
+		this.vy = 0;
+		this.vx = 0;
+		this.create();
+	}
+
+	create() {
+		let matrix = SHAPES[this.type].matrix;
+		for (let x = 0; x < 4; x++) {
+			for (let y = 0; y < 4; y++) {
+				if (matrix[this.angle][y][x] === 1) {
+					let block = drawPixel(this.type);
+					block.x = x * SQUARE_SIZE;
+					block.y = y * SQUARE_SIZE;
+					this._container.addChild(block);
+				}
+			}
+		}
+		this._container.x = this.x;
+		this._container.vx =  this.vx;
+		this._container.y = this.y;
+		this._container.vy = this.vy;
+	}
+
+	move(x, y) {
+		this.x = x;
+		this.y = y;
+		this._container.x = x;
+		this._container.y = y;
+	}
+
+	speed(vx, vy){
+		this.vy = vy;
+		this.vx = vx;
+		this._container.vx = vx;
+		this._container.vy = vy;
+	}
+
+	rotate() {
+		this.angle += 1;
+	}
+}
+function generateTetromino() {
+	let randomType = PIECES[Math.floor(Math.random() * PIECES.length)];
+	let block =  new Tetramino(randomType);
+	let tetromino = block._container;
+	app.stage.addChild(tetromino);
+
+	keyPressHandler.call(block);
+	return block;
+}
+function setup() {
+
+	tetromino = generateTetromino();
 
 	//Set the game state
 	state = play;
@@ -139,34 +254,24 @@ function setup() {
 	app.ticker.add(delta => gameLoop(delta));
 
 
-	let rectangle = new Graphics();
-	rectangle.lineStyle(4, 0xFF3300, 1);
-	rectangle.beginFill(0x66CCFF);
-	rectangle.drawRect(0, 0, 64, 64);
-	rectangle.endFill();
-	rectangle.x = 170;
-	rectangle.y = 170;
-	app.stage.addChild(rectangle);
 }
 
-function gameLoop(delta){
-
+function gameLoop(delta) {
 	//Update the current game state:
 	state(delta);
 }
 
 function play(delta) {
+	//Use the tetromino's velocity to make it move
+	tetromino.move(tetromino.x, tetromino.y + tetromino.vy);
+	tetromino.speed(tetromino.vx, 1);
 
-	//Use the cat's velocity to make it move
-	cat.x += cat.vx;
-	cat.y += cat.vy;
-
-	let catHitsWall = contain(cat, {x: 0, y: 0, width: 256, height: 512});
-	if (catHitsWall === "top" || catHitsWall === "bottom") {
-		cat.vy *= 0;
+	let tetrominoHitsWall = contain(tetromino, {x: 0, y: 0, width: PLAYGROUND.width, height: PLAYGROUND.height});
+	if (tetrominoHitsWall === "bottom") {
+		tetromino.speed(tetromino.vx, 0);
+		tetromino = generateTetromino();
 	}
 }
-
 
 function contain(sprite, container) {
 
@@ -185,17 +290,22 @@ function contain(sprite, container) {
 	}
 
 	//Right
-	if (sprite.x + sprite.width > container.width) {
-		sprite.x = container.width - sprite.width;
+	if (sprite.x + sprite._container.width > container.width) {
+		sprite.x = container.width - sprite._container.width;
 		collision = "right";
 	}
 
 	//Bottom
-	if (sprite.y + sprite.height > container.height) {
-		sprite.y = container.height - sprite.height;
+
+	if (sprite.y + sprite._container.height > container.height) {
+		sprite.y = container.height - sprite._container.height;
 		collision = "bottom";
 	}
 
 	//Return the `collision` value
 	return collision;
 }
+
+
+
+
