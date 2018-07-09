@@ -1,14 +1,21 @@
 {
-  "name": "tetris-game",
+  "name": "tetris-game-es6",
   "version": "1.0.0",
   "description": "Tetris game on Pixi.js",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon --watch src/ --exec dist/bundle.js",
+    "build": "babel src/Tetris.js --out-dir dist"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Alexa905/tetris-game-es6.git"
+  },
+  "babel": {
+    "presets": [
+      "es2015",
+      "stage-2"
+    ]
   },
   "author": "Tatyana Alexeenkova",
   "license": "MIT",
@@ -17,6 +24,13 @@
   },
   "homepage": "https://github.com/Alexa905/tetris-game-es6#readme",
   "dependencies": {
-    "pixi": "^0.3.1"
+    "pixi.js": "^4.8.1"
+  },
+  "devDependencies": {
+    "babel": "^6.23.0",
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "babel-register": "^6.26.0"
   }
 }
