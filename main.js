@@ -8,7 +8,7 @@ const PIECES = ['J', 'L', 'I'];
 const SQUARE_SIZE = 16;
 const PLAYGROUND = {
 	height: SQUARE_SIZE * 20 ,
-	width: SQUARE_SIZE * 10
+	width: SQUARE_SIZE * 11
 };
 const SHAPES = {
 	I: {
@@ -74,42 +74,45 @@ loader
 	.add("images/cat.png")
 	.load(setup);
 
-function keyboard(keyCode) {
-	let key = {};
-	key.code = keyCode;
-	key.isDown = false;
-	key.isUp = true;
-	key.press = undefined;
-	key.release = undefined;
-	//The `downHandler`
-	key.downHandler = event => {
-		if (event.keyCode === key.code) {
-			if (key.isUp && key.press) key.press();
-			key.isDown = true;
-			key.isUp = false;
-		}
-		event.preventDefault();
-	};
+let helper = {
+	keyboard(keyCode) {
+		let key = {};
+		key.code = keyCode;
+		key.isDown = false;
+		key.isUp = true;
+		key.press = undefined;
+		key.release = undefined;
+		//The `downHandler`
+		key.downHandler = event => {
+			if (event.keyCode === key.code) {
+				if (key.isUp && key.press) key.press();
+				key.isDown = true;
+				key.isUp = false;
+			}
+			event.preventDefault();
+		};
 
-	//The `upHandler`
-	key.upHandler = event => {
-		if (event.keyCode === key.code) {
-			if (key.isDown && key.release) key.release();
-			key.isDown = false;
-			key.isUp = true;
-		}
-		event.preventDefault();
-	};
+		//The `upHandler`
+		key.upHandler = event => {
+			if (event.keyCode === key.code) {
+				if (key.isDown && key.release) key.release();
+				key.isDown = false;
+				key.isUp = true;
+			}
+			event.preventDefault();
+		};
 
-	//Attach event listeners
-	window.addEventListener(
-		"keydown", key.downHandler.bind(key), false
-	);
-	window.addEventListener(
-		"keyup", key.upHandler.bind(key), false
-	);
-	return key;
+		//Attach event listeners
+		window.addEventListener(
+			"keydown", key.downHandler.bind(key), false
+		);
+		window.addEventListener(
+			"keyup", key.upHandler.bind(key), false
+		);
+		return key;
+	}
 }
+
 //Define any variables that are used in more than one function
 function drawPixel(type) {
 	let rectangle = new Graphics();
@@ -123,10 +126,10 @@ function drawPixel(type) {
 function keyPressHandler() {
 
 	//Capture the keyboard arrow keys
-	let left = keyboard(37),
-		up = keyboard(38),
-		right = keyboard(39),
-		down = keyboard(40);
+	let left = helper.keyboard(37),
+		up = helper.keyboard(38),
+		right = helper.keyboard(39),
+		down = helper.keyboard(40);
 	//Left arrow key `press` method
 	left.press = () => {
 		//Change the cat's velocity when the key is pressed
@@ -192,7 +195,7 @@ class Tetramino {
 		// Position of the tetromino
 		this.x = Math.floor(PLAYGROUND.width / 2 - SQUARE_SIZE);
 		this.y = 0;
-		this._container = new PIXI.Container();
+		this.blocks = new PIXI.Container();
 		this.vy = 0;
 		this.vx = 0;
 		this.create();
@@ -206,28 +209,28 @@ class Tetramino {
 					let block = drawPixel(this.type);
 					block.x = x * SQUARE_SIZE;
 					block.y = y * SQUARE_SIZE;
-					this._container.addChild(block);
+					this.blocks.addChild(block);
 				}
 			}
 		}
-		this._container.x = this.x;
-		this._container.vx =  this.vx;
-		this._container.y = this.y;
-		this._container.vy = this.vy;
+		this.blocks.x = this.x;
+		this.blocks.vx =  this.vx;
+		this.blocks.y = this.y;
+		this.blocks.vy = this.vy;
 	}
 
 	move(x, y) {
 		this.x = x;
 		this.y = y;
-		this._container.x = x;
-		this._container.y = y;
+		this.blocks.x = x;
+		this.blocks.y = y;
 	}
 
 	speed(vx, vy){
 		this.vy = vy;
 		this.vx = vx;
-		this._container.vx = vx;
-		this._container.vy = vy;
+		this.blocks.vx = vx;
+		this.blocks.vy = vy;
 	}
 
 	rotate() {
@@ -237,7 +240,7 @@ class Tetramino {
 function generateTetromino() {
 	let randomType = PIECES[Math.floor(Math.random() * PIECES.length)];
 	let block =  new Tetramino(randomType);
-	let tetromino = block._container;
+	let tetromino = block.blocks;
 	app.stage.addChild(tetromino);
 
 	keyPressHandler.call(block);
@@ -264,7 +267,7 @@ function gameLoop(delta) {
 function play(delta) {
 	//Use the tetromino's velocity to make it move
 	tetromino.move(tetromino.x, tetromino.y + tetromino.vy);
-	tetromino.speed(tetromino.vx, 1);
+	tetromino.speed(tetromino.vx, 10);
 
 	let tetrominoHitsWall = contain(tetromino, {x: 0, y: 0, width: PLAYGROUND.width, height: PLAYGROUND.height});
 	if (tetrominoHitsWall === "bottom") {
@@ -290,15 +293,15 @@ function contain(sprite, container) {
 	}
 
 	//Right
-	if (sprite.x + sprite._container.width > container.width) {
-		sprite.x = container.width - sprite._container.width;
+	if (sprite.x + sprite.blocks.width > container.width) {
+		sprite.x = container.width - sprite.blocks.width;
 		collision = "right";
 	}
 
 	//Bottom
 
-	if (sprite.y + sprite._container.height > container.height) {
-		sprite.y = container.height - sprite._container.height;
+	if (sprite.y + sprite.blocks.height > container.height) {
+		sprite.y = container.height - sprite.blocks.height;
 		collision = "bottom";
 	}
 
