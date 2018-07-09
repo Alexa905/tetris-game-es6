@@ -103,6 +103,7 @@ export default class Tetris {
 					}
 				});
 			});
+
 			app.stage.addChild(blocks);
 
 		}
