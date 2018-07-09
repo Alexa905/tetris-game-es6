@@ -87,7 +87,9 @@ export default class Tetris {
 			return matrix;
 		}
 
-		function drawMatrix(matrix, offset) {matrix.forEach((row, y) => {
+		function drawMatrix(matrix, offset) {
+			let blocks = new PIXI.Container();
+			matrix.forEach((row, y) => {
 				row.forEach((value, x) => {
 					if (value !== 0) {
 						let block = new PIXI.Graphics();
@@ -97,10 +99,11 @@ export default class Tetris {
 						block.endFill();
 						block.x = x + offset.x;
 						block.y = y + offset.y;
-						app.stage.addChild(block);
+						blocks.addChild(block);
 					}
 				});
 			});
+			app.stage.addChild(blocks);
 
 		}
 		drawMatrix(arena, {x: 0, y: 0});
