@@ -1,7 +1,10 @@
-export const SQUARE_SIZE = 16;
+export const SQUARE_SIZE = 25;
 export const PLAYGROUND = {
+	rows: 20,
+	columns: 12,
 	height: SQUARE_SIZE * 20,
-	width: SQUARE_SIZE * 11
+	width: SQUARE_SIZE * 12,
+
 };
 export const SHAPES = {
 	I: {

@@ -36,40 +36,39 @@ const helper = {
 		);
 		return key;
 	},
-	drawPixel(type) {
+	drawSquare(type) {
 		let rectangle = new PIXI.Graphics();
-		rectangle.lineStyle(4, 0xFF3300, 1);
+		rectangle.lineStyle(1, 0xFF3300, 1, 1);
 		rectangle.beginFill(SHAPES[type].color);
-		rectangle.drawRect(0, 0, SQUARE_SIZE, SQUARE_SIZE);
+		rectangle.drawRect(0, 0, SQUARE_SIZE-1, SQUARE_SIZE-1);
 		rectangle.endFill();
 		return rectangle;
 	},
-	contain(sprite, container) {
+	contain(tetromino, container) {
 
 		let collision = undefined;
 
 		//Left
-		if (sprite.x < container.x) {
-			sprite.x = container.x;
+		if (tetromino.x < container.x) {
+			tetromino.x = container.x;
 			collision = "left";
 		}
 
 		//Top
-		if (sprite.y < container.y) {
-			sprite.y = container.y;
+		if (tetromino.y < container.y) {
+			tetromino.y = container.y;
 			collision = "top";
 		}
 
 		//Right
-		if (sprite.x + sprite.blocks.width > container.width) {
-			sprite.x = container.width - sprite.blocks.width;
+		if (tetromino.x + tetromino.width > container.width) {
+			tetromino.x = container.width - tetromino.width;
 			collision = "right";
 		}
 
 		//Bottom
 
-		if (sprite.y + sprite.blocks.height > container.height) {
-			sprite.y = container.height - sprite.blocks.height;
+		if (tetromino.y + tetromino.height > container.height) {
 			collision = "bottom";
 		}
 

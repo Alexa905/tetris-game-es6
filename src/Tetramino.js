@@ -1,33 +1,50 @@
-import { SQUARE_SIZE, PLAYGROUND, SHAPES } from './Constants.js';
-import helper from './Helper.js';
+import {PLAYGROUND, SHAPES, SQUARE_SIZE} from "./Constants.js";
+import helper from "./Helper.js";
+
 export default class Tetramino {
-	constructor(type) {
+	constructor(type, stage) {
 		this.type = type;
-		// Position of the tetromino
 		this.x = Math.floor(PLAYGROUND.width / 2 - SQUARE_SIZE);
 		this.y = 0;
 		this.blocks = new PIXI.Container();
 		this.vy = 0;
 		this.vx = 0;
+		this.angle = 0;
+		this.stage = stage;
+		this.blocks.pivot.y = SQUARE_SIZE;
+		this.blocks.pivot.x = SQUARE_SIZE;
+		this.draw();
 	}
 
-	create() {
-		let matrix = SHAPES[this.type].matrix;
+	draw() {
 		for (let x = 0; x < 4; x++) {
 			for (let y = 0; y < 4; y++) {
-				if (matrix[y][x] === 1) {
-					let block = helper.drawPixel(this.type);
+				if (this.hasBlock(x, y)) {
+					let block = helper.drawSquare(this.type);
 					block.x = x * SQUARE_SIZE;
 					block.y = y * SQUARE_SIZE;
 					this.blocks.addChild(block);
+
 				}
 			}
 		}
 		this.blocks.x = this.x;
-		this.blocks.vx = this.vx;
 		this.blocks.y = this.y;
-		this.blocks.vy = this.vy;
-		return this.blocks;
+		this.width = this.blocks.width;
+		this.height = this.blocks.height;
+	}
+
+	static getRadians(degrees) {
+		return degrees * (Math.PI / 180);
+	}
+
+
+	/**
+	 * Check if the tetromino has a block in the position (x, y)
+	 * x and y being relative the the position of the tetromino
+	 */
+	hasBlock(x, y) {
+		return SHAPES[this.type].matrix[y][x] === 1;
 	}
 
 	move(x, y) {
@@ -45,6 +62,8 @@ export default class Tetramino {
 	}
 
 	rotate() {
-
+		this.angle += 90;
+		this.blocks.rotation = Tetramino.getRadians(this.angle);
 	}
 }
+
